@@ -1,0 +1,14 @@
+{
+  "name": "ble-test",
+  "version": "1.0.0",
+  "description": "BLE test project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Trung Vo",
+  "license": "ISC",
+  "dependencies": {
+    "noble-device": "^1.3.0"
+  }  
+}
