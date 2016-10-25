@@ -23,15 +23,6 @@ function onDiscover(device) {
     return true;
 }
 
-function readFirmwareRevision2(device) {
-    return new Promise((resolve, reject) => {
-        device.readFirmwareRevision(function (error, data) {
-            if (error) reject(error);
-            else resolve(data);
-        });        
-    });
-}
-
 function recurse(device, i) {
     if (i > 30) return;
     device.readFirmwareRevision(function (error, data) {
