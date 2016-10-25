@@ -5,16 +5,15 @@ YourThing.discoverAll(onDiscover);
 function onDiscover(device) {
     // you can be notified of disconnects
     device.on('disconnect', function () {
-        console.log('we got disconnected! ');
+        console.log("- onDisconnect: " + device._peripheral.advertisement.localName + ' ' + device.address);
     });
 
     var localName = device._peripheral.advertisement.localName;
-    console.log("- onDiscover: " + device.id + ' ' + device.address + ' rssi=' + device._peripheral.rssi 
-        + ', localName:' + localName
-    );
+    console.log("- onDiscover: " + device._peripheral.advertisement.localName + ' ' + device.address);
 
-    if (localName && localName.indexOf('RMM') >= 0) {
-        device.connectAndSetUp(function (error) {            
+    // if (localName && localName.indexOf('Q') >= 0) 
+    {
+        device.connectAndSetUp(function (error) {
             onConnected(device);
         });
     }
@@ -22,22 +21,22 @@ function onDiscover(device) {
 }
 
 function onConnected(device) {
-    console.log("- onConnect: " + device.id + ' ' + device.address + ', name:' + device._peripheral.advertisement.localName);
+    console.log("- onConnected: " + device._peripheral.advertisement.localName + ' ' + device.address);
 
-    device.discoverServicesAndCharacteristics(function() {
-        if (device._services) {
-            Object.keys(device._services).forEach(function (key) {
-                console.log(key + " = " + device._services[key]);
-            });
-        }
-    });
-    // yourThing.send(new Buffer([0x00, 0x01]), function() {
-    //   console.log('data sent');
-    // });
+    var services = device._peripheral.services;
+    if (services) {
+        Object.keys(services).forEach(function (key) {
+            console.log('   Service ' + services[key]);
+        });
+        // var serviceUuid = '00001812-0000-1000-8000-00805f9b34fb';
+        // console.log('--- has 00001812 ' + device.hasService(serviceUuid.toLowerCase()));
+        // serviceUuid = '1812';
+        // console.log('--- has 1812 ' + device.hasService(serviceUuid.toLowerCase()));
+        // serviceUuid = '180A';
+        // console.log('--- has 180A ' + device.hasService(serviceUuid.toLowerCase()));
+        // serviceUuid = '7905F431-B5CE-4E99-A40F-4B1E122D00D0';
+        // console.log('--- has ANCS ' + device.hasService(serviceUuid.toLowerCase()));
+    }
 
-    // yourThing.receive(function(error, data) {
-    //   console.log('got data: ' + data);
-    // });
-    
-    //device.disconnect();
+    device.disconnect();
 }
