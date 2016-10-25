@@ -1,8 +1,8 @@
 var NobleDevice = require('noble-device');
 
-var YOUR_THING_SERVICE_UUID = 'xxxxxxxxxxxxxxxxxxxxxxxx';
+var YOUR_THING_SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb';
 var YOUR_THING_NOTIFY_CHAR  = 'xxxxxxxxxxxxxxxxxxxxxxxx';
-var YOUR_THING_READ_CHAR    = 'xxxxxxxxxxxxxxxxxxxxxxxx';
+var YOUR_THING_READ_CHAR    = '2a25';
 var YOUR_THING_WRITE_CHAR   = 'xxxxxxxxxxxxxxxxxxxxxxxx';
 
 // then create your thing with the object pattern
@@ -18,43 +18,56 @@ var YourThing = function(peripheral) {
 
 // and/or specify method to check peripheral (optional)
 // YourThing.is = function(peripheral) {
-//   return (peripheral.advertisement.localName === 'My Thing\'s Name');
+//   // return (peripheral.advertisement.localName === 'Bose QuietComfort 35');
+//   return (peripheral.advertisement.localName && 
+//     peripheral.advertisement.localName.indexOf('Bose') >= 0);
 // };
 
 // inherit noble device
 NobleDevice.Util.inherits(YourThing, NobleDevice);
-
-// you can mixin other existing service classes here too,
-// noble device provides battery and device information,
-// add the ones your device provides
-NobleDevice.Util.mixin(YourThing, NobleDevice.BatteryService);
+// NobleDevice.Util.mixin(YourThing, NobleDevice.BatteryService);
 NobleDevice.Util.mixin(YourThing, NobleDevice.DeviceInformationService);
 
 // you could send some data
-YourThing.prototype.send = function(data, done) {
-  this.writeDataCharacteristic(YOUR_THING_SERVICE_UUID, YOUR_THING_WRITE_CHAR, data, done);
-};
+// YourThing.prototype.send = function(data, done) {
+//   this.writeDataCharacteristic(YOUR_THING_SERVICE_UUID, YOUR_THING_WRITE_CHAR, data, done);
+// };
 
-// read some data
-YourThing.prototype.receive = function(callback) {
-  this.readDataCharacteristic(YOUR_THING_SERVICE_UUID, YOUR_THING_READ_CHAR, callback);
-};
+// // read some data
+// YourThing.prototype.receive = function(callback) {
+//   this.readStringCharacteristic(YOUR_THING_SERVICE_UUID, YOUR_THING_READ_CHAR, callback);
+// };
 
-YourThing.prototype.connectAndSetup = function(callback) {
-  NobleDevice.prototype.connectAndSetup.call(this, function(error) {
+YourThing.prototype.connectAndSetup = function (callback) {
+  NobleDevice.prototype.connectAndSetup.call(this, function (error) {
     // maybe notify on a characteristic ?
-    this.notifyCharacteristic(YOUR_THING_SERVICE_UUID, YOUR_THING_NOTIFY_CHAR, true, this._onRead.bind(this), function(err) {
-      callback(err);
-    });
+    //   this.notifyCharacteristic(YOUR_THING_SERVICE_UUID, YOUR_THING_NOTIFY_CHAR, true, this._onRead.bind(this), function(err) {
+    //     callback(err);
+    //   });
+    var services = this._peripheral.services;
+    if (services) {
+      Object.keys(services).forEach(function (key) {
+        console.log('   Service ' + services[key]);
+      });
+
+      this.readModelNumber(function (error, data) {
+        console.log('   readModelNumber ' + data);
+        this.readSerialNumber(function (error, data) {
+          console.log('   readSerialNumber ' + data);
+          this.disconnect();
+        });
+      });
+    }
+
   }).bind(this);
 };
 
-YourThing.prototype.onDisconnect = function() {
-  // clean up ...
+// YourThing.prototype.onDisconnect = function() {
+//   // clean up ...
 
-  // call super's onDisconnect
-  NobleDevice.prototype.onDisconnect.call(this);
-};
+//   // call super's onDisconnect
+//   NobleDevice.prototype.onDisconnect.call(this);
+// };
 
 
 
