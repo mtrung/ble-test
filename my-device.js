@@ -1,6 +1,6 @@
 var NobleDevice = require('noble-device');
 
-var YOUR_THING_SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb';
+var YOUR_THING_SERVICE_UUID = '3dda0001957f7d4a34a674696673696d';
 var YOUR_THING_NOTIFY_CHAR  = 'xxxxxxxxxxxxxxxxxxxxxxxx';
 var YOUR_THING_READ_CHAR    = '2a25';
 var YOUR_THING_WRITE_CHAR   = 'xxxxxxxxxxxxxxxxxxxxxxxx';
@@ -14,7 +14,7 @@ var YourThing = function(peripheral) {
 };
 
 // tell Noble about the service uuid(s) your peripheral advertises (optional)
-// YourThing.SCAN_UUIDS = [YOUR_THING_SERVICE_UUID];
+YourThing.SCAN_UUIDS = [YOUR_THING_SERVICE_UUID];
 
 // and/or specify method to check peripheral (optional)
 // YourThing.is = function(peripheral) {

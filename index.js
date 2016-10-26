@@ -6,7 +6,7 @@ YourThing.discoverAll(onDiscover);
 function onDiscover(device) {
     // you can be notified of disconnects
     device.on('disconnect', function () {
-        console.log("- onDisconnect: " + device._peripheral.advertisement.localName + ' ' + device.address);
+        console.log(" -- onDisconnect: " + device._peripheral.advertisement.localName + ' ' + device.address);
     });
 
     var localName = device._peripheral.advertisement.localName;
@@ -15,7 +15,8 @@ function onDiscover(device) {
         console.log("- stopDiscover: " + device1._peripheral.advertisement.localName + ' ' + device1.address);
     });
 
-    if (localName && localName.indexOf('Q') >= 0) {
+    // if (localName && localName.indexOf('Q') >= 0) 
+    {
         device.connectAndSetUp(function (error) {
             onConnected(device);
         });
@@ -37,38 +38,78 @@ function recurse(device, i) {
     });
 }
 
-function discoverServicesAndCharacteristics(device, readChar) {
-    if (!device || !device._peripheral)
+function discoverServicesAndCharacteristics(device, readCharMode) {
+    if (!device || !device._peripheral || !readCharMode)
         return;
 
     var services = device._peripheral.services;
     for (var i in services) {
         var service = services[i];
-        console.log('\n   - Service ' + service);
+        if (readCharMode === 1) console.log('\n   - Service ' + service);
+
+        if (readCharMode === 1) readStack[device.address+service.uuid] = service.characteristics.length();
+        else if (readCharMode === 2) readStack[device.address+service.uuid] = 2;
+
         for (var j in service.characteristics) {
             var characteristic = service.characteristics[j];
-            console.log('      Characteristic ' + characteristic);
-            if (readChar && characteristic.properties.indexOf('read') >= 0) {
-                // console.log('      read ');
-                readCharacter(device, service.uuid, characteristic);
+            if (readCharMode === 1) console.log('      Characteristic ' + characteristic);
+            if (readCharMode && characteristic.properties.indexOf('read') >= 0) {
+                readCharacter(device, service, characteristic, readCharMode);
             }
         }
     }
 }
 
-function readCharacter(device, serviceUuid, characteristic) {
-    device.readDataCharacteristic(serviceUuid, characteristic.uuid, function (error, data) {
-        if (error) {
-            return;
+function readCharacterCb(device, service, characteristic, data, error) {
+    if (error) {
+        //device.disconnect();
+        return;
+    }
+    var serviceName = service.name || service.uuid;
+    var charName = characteristic.name || characteristic.uuid;
+    var key = device.address+service.uuid;
+
+    console.log(readStack[key] +': '+ device._peripheral.advertisement.localName + '.' + serviceName + '.' + charName + ': ' + data.toString());
+    //device.disconnect();
+
+    if (readStack[key]) {
+        readStack[key] = readStack[key] - 1;
+        if (readStack[key] === 0) {
+            device.disconnect();
         }
-        if (characteristic.name) console.log(characteristic.name + ' = ' + data.toString());
-        else console.log(characteristic.uuid + ' = ' + data.toString());
-    });
+    } 
+}
+
+var readStack = {};
+
+function readCharacter(device, service, characteristic, readCharMode) {
+    if (readCharMode === 1) {
+        // var key = service.uuid;
+        // if (readStack[key]) {
+        //     readStack[key] = readStack[key] + 1;
+        // } else readStack[key] = 0;
+
+        device.readDataCharacteristic(service.uuid, characteristic.uuid, function (error, data) {
+            readCharacterCb(device, service, characteristic, data, error);
+        });
+    } else if (readCharMode === 2) {
+        if (service.uuid === '180a' && (characteristic.uuid === '2a25') || characteristic.uuid === '2a26') {
+            // var key = service.uuid;
+            // if (readStack[key]) {
+            //     readStack[key] = readStack[key] + 1;
+            // } else readStack[key] = 0;
+
+            device.readDataCharacteristic(service.uuid, characteristic.uuid, function (error, data) {
+                readCharacterCb(device, service, characteristic, data, error);
+            });
+        }
+    }
+
 }
 
 function onConnected(device) {
-    console.log("- onConnected: " + device._peripheral.advertisement.localName + ' ' + device.address);
+    console.log(" - onConnected: " + device._peripheral.advertisement.localName + ' ' + device.address);
     // recurse(device, 0);
-    discoverServicesAndCharacteristics(device, true);            
+    discoverServicesAndCharacteristics(device, 2);            
     //device.disconnect();
 }
