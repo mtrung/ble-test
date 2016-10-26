@@ -37,8 +37,38 @@ function recurse(device, i) {
     });
 }
 
+function discoverServicesAndCharacteristics(device, readChar) {
+    if (!device || !device._peripheral)
+        return;
+
+    var services = device._peripheral.services;
+    for (var i in services) {
+        var service = services[i];
+        console.log('\n   - Service ' + service);
+        for (var j in service.characteristics) {
+            var characteristic = service.characteristics[j];
+            console.log('      Characteristic ' + characteristic);
+            if (readChar && characteristic.properties.indexOf('read') >= 0) {
+                // console.log('      read ');
+                readCharacter(device, service.uuid, characteristic);
+            }
+        }
+    }
+}
+
+function readCharacter(device, serviceUuid, characteristic) {
+    device.readDataCharacteristic(serviceUuid, characteristic.uuid, function (error, data) {
+        if (error) {
+            return;
+        }
+        if (characteristic.name) console.log(characteristic.name + ' = ' + data.toString());
+        else console.log(characteristic.uuid + ' = ' + data.toString());
+    });
+}
+
 function onConnected(device) {
     console.log("- onConnected: " + device._peripheral.advertisement.localName + ' ' + device.address);
-    recurse(device, 0);
+    // recurse(device, 0);
+    discoverServicesAndCharacteristics(device, true);            
     //device.disconnect();
 }

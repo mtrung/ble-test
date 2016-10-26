@@ -44,21 +44,6 @@ YourThing.prototype.connectAndSetup = function (callback) {
     //   this.notifyCharacteristic(YOUR_THING_SERVICE_UUID, YOUR_THING_NOTIFY_CHAR, true, this._onRead.bind(this), function(err) {
     //     callback(err);
     //   });
-    var services = this._peripheral.services;
-    if (services) {
-      Object.keys(services).forEach(function (key) {
-        console.log('   Service ' + services[key]);
-      });
-
-      this.readModelNumber(function (error, data) {
-        console.log('   readModelNumber ' + data);
-        this.readSerialNumber(function (error, data) {
-          console.log('   readSerialNumber ' + data);
-          this.disconnect();
-        });
-      });
-    }
-
   }).bind(this);
 };
 
